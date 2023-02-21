@@ -1,0 +1,54 @@
+version: '2.4'
+
+services:
+
+    logstash:
+        image: wachira90/logstash:7.10.1
+        container_name: logstash
+        depends_on:
+            - elasticsearch
+        volumes:
+#            - ./config_logstash/logstash.conf:/usr/share/logstash/config/logstash.conf
+            - ./config_logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf          
+            - ./config_logstash/logstash-add1.conf:/usr/share/logstash/pipeline/logstash-add1.conf
+            - ./config_logstash/logstash-firewall.conf:/usr/share/logstash/pipeline/logstash-firewall.conf
+#            - ./config/logstash-sample.conf:/usr/share/logstash/config/logstash-sample.conf
+#            - ./config/logstash-pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
+        ports:
+            - "9600:9600"
+            - "5144:5144"
+            - "5044:5044/tcp"
+            - "5044:5044/udp"
+            - "5244:5244/tcp"
+            - "5244:5244/udp"
+        networks:
+            elastic_lan:    
+
+    kibana:
+        image: wachira90/kibana:7.10.1
+        container_name: kibana
+        depends_on:
+            - elasticsearch        
+        environment:
+            - "ELASTICSEARCH_URL=http://elasticsearch:9200"
+        ports:
+            - "5601:5601"
+        networks:
+            elastic_lan:
+
+    elasticsearch:
+        image: wachira90/elastic:7.10.1
+        container_name: elasticsearch
+#        environment:
+#            - "discovery.type=single-node"
+#            - "cluster.name=bemislog"
+        volumes:
+            - ./config_elk/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml    
+        ports:
+            - "9300:9300"
+            - "9200:9200"
+        networks:
+            elastic_lan:
+
+networks:
+    elastic_lan:
